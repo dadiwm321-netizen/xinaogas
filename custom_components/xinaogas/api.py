@@ -115,7 +115,7 @@ class XinaoGasApi:
             raise XinaoGasApiError("接口返回格式异常")
         code = str(payload.get("resultCode"))
         message = str(payload.get("message") or payload.get("msg") or "接口返回失败")
-        if code == "200":
+        if code == "200" or code == "301":
             return payload
         if code in {"-20101", "401", "403", "1001", "1002", "1003"} or "token" in message.lower() or "登录" in message:
             raise XinaoGasAuthError(message)
@@ -139,7 +139,7 @@ class XinaoGasApi:
         try:
             async with self._session.get(
                 TOKEN_APPLY_URL,
-                params={"env": "2", "token": self.token},
+                params={"env": "1", "token": self.token},
                 headers=self._headers(),
                 timeout=ClientTimeout(total=25),
             ) as resp:

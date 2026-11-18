@@ -19,7 +19,7 @@ BASE_URL = "https://wechatapp.ecej.com"
 PAYMENT_URL = f"{BASE_URL}/livingpay"
 
 TOKEN_APPLY_URL = f"{BASE_URL}/businesshall/wechatapp/token/apply"
-BIND_CARDS_URL = f"{PAYMENT_URL}/v3/xcx/getBindCardListV2.json"
+BIND_CARDS_URL = f"{PAYMENT_URL}/v3/xcx/getBingCardListV5.json"
 BILL_URL = f"{PAYMENT_URL}/v3/xcx/getbill.json"
 BILL_LIST_URL = f"{PAYMENT_URL}/v3/xcx/getBillListV2.json"
 METER_GAS_URL = f"{PAYMENT_URL}/v3/xcx/iot/meterGasInfo.json"

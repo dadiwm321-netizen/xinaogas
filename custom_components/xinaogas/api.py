@@ -198,8 +198,7 @@ class XinaoGasApi:
             {
                 "token": self.token,
                 "appKey": generate_app_key(),
-                "clientType": "gaswx",
-                "moduleCode": "1",
+                "clientType": "wxxcx",
             },
         )
         raw_cards = find_list(payload.get("data"))

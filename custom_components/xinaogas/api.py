@@ -234,9 +234,9 @@ class XinaoGasApi:
                     BILL_URL,
                     {
                         "token": self.token,
-                        "clientType": "gaswx",
+                        "clientType": "wxxcx",
                         "appKey": generate_app_key(),
-                        "companyCode": card.get("companyCode") or "",
+                        "companyCode": card.get("companyCode") or "0341",
                         "paymentNo": pno,
                         "sign": generate_bill_sign(pno),
                     },
@@ -250,7 +250,7 @@ class XinaoGasApi:
             BILL_LIST_URL,
             {
                 "token": self.token,
-                "clientType": "gaswx",
+                "clientType": "wxxcx",
                 "appKey": generate_app_key(),
                 "platformOnlyCardNo": platform_card_no(card),
             },
@@ -260,7 +260,7 @@ class XinaoGasApi:
     async def async_get_energy_analysis(self, card: dict[str, Any]) -> dict[str, Any]:
         data = {
             "token": self.token,
-            "clientType": "gaswx",
+            "clientType": "wxxcx",
             "appKey": generate_app_key(),
             "paymentNo": payment_no(card),
             "companyCode": card.get("companyCode") or "",
@@ -280,7 +280,7 @@ class XinaoGasApi:
                     {
                         "refreshFlag": "false",
                         "appKey": generate_app_key(),
-                        "clientType": "gaswx",
+                        "clientType": "wxxcx",
                         "token": self.token,
                         "contractNo": contract_no(card),
                     },

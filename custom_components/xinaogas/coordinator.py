@@ -330,12 +330,12 @@ class XinaoGasCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 _LOGGER.warning("物联表数据获取失败: %s", err)
                 meter = {}
 
-            try:
-                energy = await self.api.async_get_energy_analysis(card)
-                _LOGGER.debug("能耗分析数据获取成功")
-            except XinaoGasApiError as err:
-                _LOGGER.warning("能耗分析数据获取失败: %s", err)
-                energy = {}
+            # try:
+            #     energy = await self.api.async_get_energy_analysis(card)
+            #     _LOGGER.debug("能耗分析数据获取成功")
+            # except XinaoGasApiError as err:
+            #     _LOGGER.warning("能耗分析数据获取失败: %s", err)
+            energy = {}
 
             history = bill_list.get("ordinaryMeterHistoricalBillDtoList")
             latest_bill = first_dict(history) if history else {}

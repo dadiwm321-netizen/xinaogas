@@ -294,6 +294,7 @@ class XinaoGasCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             await self.token_manager.async_ensure_valid_token()
             self.api = await self.token_manager.async_get_api()
             entry_card = self._entry_card()
+            _LOGGER.debug("开始刷新数据，paymentNo=%s", self._entry_value(CONF_PAYMENT_NO))
             card = await self.api.async_get_card(
                 self._entry_value(CONF_PLATFORM_CARD_NO),
                 self._entry_value(CONF_CONTRACT_NO),
@@ -310,22 +311,30 @@ class XinaoGasCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             try:
                 bill = await self.api.async_get_bill(card)
-            except XinaoGasApiError:
+                _LOGGER.debug("账单数据获取成功")
+            except XinaoGasApiError as err:
+                _LOGGER.warning("账单数据获取失败: %s", err)
                 bill = {}
 
             try:
                 bill_list = await self.api.async_get_bill_list(card)
-            except XinaoGasApiError:
+                _LOGGER.debug("账单列表获取成功")
+            except XinaoGasApiError as err:
+                _LOGGER.warning("账单列表获取失败: %s", err)
                 bill_list = {}
 
             try:
                 meter = await self.api.async_get_meter_gas_info(card)
-            except XinaoGasApiError:
+                _LOGGER.debug("物联表数据获取成功")
+            except XinaoGasApiError as err:
+                _LOGGER.warning("物联表数据获取失败: %s", err)
                 meter = {}
 
             try:
                 energy = await self.api.async_get_energy_analysis(card)
-            except XinaoGasApiError:
+                _LOGGER.debug("能耗分析数据获取成功")
+            except XinaoGasApiError as err:
+                _LOGGER.warning("能耗分析数据获取失败: %s", err)
                 energy = {}
 
             history = bill_list.get("ordinaryMeterHistoricalBillDtoList")
@@ -342,7 +351,7 @@ class XinaoGasCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             cumulative_usage = round(meter_reading + after_reading, 3) if meter_reading is not None else None
             await self.store.async_save(self.store_data)
 
-            return {
+            result = {
                 "balance": to_number(meter.get("balance")) or to_number(bill.get("balance")),
                 "current_month_usage": to_number(latest_bill.get("thisGasConsumption")),
                 "current_month_amount": to_number(latest_bill.get("totalAmount") or ladder.get("total")),
@@ -378,5 +387,14 @@ class XinaoGasCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "raw_meter_gas_info": meter,
                 "raw_energy_analysis": energy,
             }
+            _LOGGER.info(
+                "数据刷新完成：余额=%s, 当月用气=%s, 日用气=%s, 物联表=%s",
+                result.get("balance"),
+                result.get("month_total_gas"),
+                result.get("daily_usage"),
+                bool(meter),
+            )
+            return result
         except XinaoGasApiError as err:
+            _LOGGER.error("数据刷新失败: %s", err)
             raise UpdateFailed(str(err)) from err

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector
+
+_LOGGER = logging.getLogger(__name__)
 
 from .api import (
     XinaoGasApiError,
@@ -98,15 +101,20 @@ async def _fetch_cards(hass: HomeAssistant, token: str | None = None) -> list[di
     manager = await _get_token_manager(hass)
     token = (token or "").strip()
     if token:
+        _LOGGER.info("配置流程：使用用户输入的 token（长度: %d）获取燃气户号", len(token))
         await manager.async_set_token(token)
         await manager.async_probe_token()
     elif not await manager.async_get_token():
+        _LOGGER.warning("配置流程：缺少 token")
         raise XinaoGasAuthError("缺少小程序 token")
     else:
+        _LOGGER.debug("配置流程：使用已保存的 token")
         await manager.async_ensure_valid_token()
 
     api = await manager.async_get_api()
-    return await api.async_get_bind_cards()
+    cards = await api.async_get_bind_cards()
+    _LOGGER.info("配置流程：成功获取 %d 个燃气户号", len(cards))
+    return cards
 
 
 def _put_card_data(data: dict[str, Any], card: dict[str, Any]) -> dict[str, Any]:

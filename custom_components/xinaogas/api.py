@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import re
 from typing import Any
 
 from aiohttp import ClientError, ClientSession, ClientTimeout
 from homeassistant.util import dt as dt_util
+
+_LOGGER = logging.getLogger(__name__)
 
 from .const import (
     APPKEY_SALT,
@@ -112,30 +115,40 @@ class XinaoGasApi:
 
     def _check(self, payload: Any) -> dict[str, Any]:
         if not isinstance(payload, dict):
+            _LOGGER.error("接口返回格式异常，payload 类型为 %s: %s", type(payload).__name__, payload)
             raise XinaoGasApiError("接口返回格式异常")
         code = str(payload.get("resultCode"))
         message = str(payload.get("message") or payload.get("msg") or "接口返回失败")
         if code == "200" or code == "301":
             return payload
         if code in {"-20101", "401", "403", "1001", "1002", "1003"} or "token" in message.lower() or "登录" in message:
+            _LOGGER.warning("接口认证失败: %s (%s)", message, code)
             raise XinaoGasAuthError(message)
+        _LOGGER.error("接口返回失败: %s (%s)", message, code)
         raise XinaoGasApiError(f"{message}（{code}）")
 
     async def _request(self, method: str, url: str, data: dict[str, Any] | None = None) -> dict[str, Any]:
+        _LOGGER.debug("API %s %s params=%s", method.upper(), url, data)
         try:
             if method == "get":
                 async with self._session.get(url, params=data, headers=self._headers(), timeout=ClientTimeout(total=25)) as resp:
                     resp.raise_for_status()
-                    return self._check(await resp.json(content_type=None))
-            async with self._session.post(url, data=data, headers=self._headers(), timeout=ClientTimeout(total=25)) as resp:
-                resp.raise_for_status()
-                return self._check(await resp.json(content_type=None))
+                    payload = await resp.json(content_type=None)
+            else:
+                async with self._session.post(url, data=data, headers=self._headers(), timeout=ClientTimeout(total=25)) as resp:
+                    resp.raise_for_status()
+                    payload = await resp.json(content_type=None)
+            _LOGGER.debug("API response %s: %s", url, payload)
+            return self._check(payload)
         except ClientError as err:
+            _LOGGER.error("API %s %s 网络错误: %s", method.upper(), url, err)
             raise XinaoGasApiError(str(err)) from err
         except ValueError as err:
+            _LOGGER.error("API %s %s 返回内容无法解析: %s", method.upper(), url, err)
             raise XinaoGasApiError("接口返回无法解析") from err
 
     async def async_apply_token(self) -> dict[str, Any]:
+        _LOGGER.debug("申请续期 token: %s", TOKEN_APPLY_URL)
         try:
             async with self._session.get(
                 TOKEN_APPLY_URL,
@@ -146,11 +159,16 @@ class XinaoGasApi:
                 resp.raise_for_status()
                 payload = await resp.json(content_type=None)
         except ClientError as err:
+            _LOGGER.error("token 续期接口网络错误: %s", err)
             raise XinaoGasApiError(str(err)) from err
         except ValueError as err:
+            _LOGGER.error("token 续期接口返回无法解析: %s", err)
             raise XinaoGasApiError("接口返回无法解析") from err
 
+        _LOGGER.debug("token 续期返回: %s", payload)
+
         if not isinstance(payload, dict):
+            _LOGGER.error("token 续期接口返回格式异常: %s", payload)
             raise XinaoGasApiError("接口返回格式异常")
 
         code = str(payload.get("resultCode"))
@@ -159,16 +177,21 @@ class XinaoGasApi:
             new_token = data.get("newToken") or data.get("token")
             if new_token:
                 self.token = str(new_token)
+                _LOGGER.info("token 续期成功，新 token 长度: %d", len(self.token))
             return data
         if code == "301":
+            _LOGGER.debug("token 仍在有效期内（301）")
             return data
 
         message = str(payload.get("message") or payload.get("msg") or "token续期失败")
         if code in {"-20101", "401", "403", "1001", "1002", "1003"} or "token" in message.lower() or "登录" in message:
+            _LOGGER.warning("token 续期认证失败: %s (%s)", message, code)
             raise XinaoGasAuthError(message)
+        _LOGGER.error("token 续期失败: %s (%s)", message, code)
         raise XinaoGasApiError(f"{message}（{code}）")
 
     async def async_get_bind_cards(self) -> list[dict[str, Any]]:
+        _LOGGER.debug("获取绑定卡片列表: %s", BIND_CARDS_URL)
         payload = await self._request(
             "post",
             BIND_CARDS_URL,
@@ -179,10 +202,17 @@ class XinaoGasApi:
                 "moduleCode": "1",
             },
         )
-        cards = [dict(item) for item in find_list(payload.get("data")) if is_gas_card(item)]
+        raw_cards = find_list(payload.get("data"))
+        _LOGGER.debug("绑定卡片原始数量: %d", len(raw_cards))
+        cards = [dict(item) for item in raw_cards if is_gas_card(item)]
+        _LOGGER.info("燃气户号数量: %d", len(cards))
         if not cards:
+            _LOGGER.warning("未找到燃气户号，原始卡片列表: %s", raw_cards)
             raise XinaoGasApiError("未找到绑定的燃气户号")
         cards.sort(key=lambda item: 0 if str(item.get("businessType") or "") in {"4", "21", "200"} else 1)
+        for i, card in enumerate(cards):
+            _LOGGER.debug("燃气户号[%d]: paymentNo=%s, companyName=%s, businessType=%s, cardType=%s",
+                          i, payment_no(card), card.get("companyName"), card.get("businessType"), card.get("cardType"))
         return cards
 
     async def async_get_card(self, platform_no: str = "", contract: str = "", payment: str = "") -> dict[str, Any]:

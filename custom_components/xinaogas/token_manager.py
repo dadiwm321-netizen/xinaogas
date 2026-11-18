@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from typing import Any, Callable
 
@@ -11,6 +12,8 @@ from homeassistant.util import dt as dt_util
 
 from .api import XinaoGasApi, XinaoGasApiError
 from .const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 TOKEN_STORE_KEY = f"{DOMAIN}_token"
 
@@ -55,6 +58,7 @@ class XinaoGasTokenManager:
             self.data["token_next_check"] = self._next_token_check(now, int(token_ttl))
         elif not self.data.get("token_next_check"):
             self.data["token_next_check"] = now + TOKEN_MIN_SCHEDULE_DELAY_MS
+        _LOGGER.info("设置 token 成功，长度: %d, TTL: %s 秒", len(token), token_ttl)
         await self.async_save()
         self.async_schedule()
 
@@ -109,6 +113,7 @@ class XinaoGasTokenManager:
         await self.async_load()
         token = str(self.data.get("token") or "").strip()
         if not token:
+            _LOGGER.debug("token 续期跳过：当前无 token")
             return
 
         now = self._now_ms()
@@ -117,6 +122,7 @@ class XinaoGasTokenManager:
         if ttl and save_time:
             remain = save_time + ttl - now
             if remain > TOKEN_RENEW_AHEAD_MS and not force:
+                _LOGGER.debug("token 剩余有效期 %d 秒，无需续期", remain // 1000)
                 self.data.update(
                     {
                         "token_ttl": remain,
@@ -127,10 +133,12 @@ class XinaoGasTokenManager:
                 await self.async_save()
                 return
 
+        _LOGGER.debug("开始执行 token 续期（force=%s）", force)
         api = XinaoGasApi(async_get_clientsession(self.hass), token)
         try:
             data = await api.async_apply_token()
-        except XinaoGasApiError:
+        except XinaoGasApiError as err:
+            _LOGGER.warning("token 续期失败: %s，将在 %d 秒后重试", err, TOKEN_RECHECK_CLOSE_INTERVAL_MS // 1000)
             self.data.update(
                 {
                     "token_last_check": now,
@@ -141,6 +149,7 @@ class XinaoGasTokenManager:
             return
 
         ttl = int(data.get("newTokenTtl") or data.get("tokenTtl") or data.get("currentTokenTtl") or ttl or 0)
+        _LOGGER.info("token 续期成功，新 TTL: %d 秒", ttl // 1000 if ttl > 100000 else ttl)
         self.data.update(
             {
                 "token": api.token,

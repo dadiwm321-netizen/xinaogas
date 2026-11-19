@@ -27,7 +27,7 @@ SENSORS: tuple[XinaoGasSensorDescription, ...] = (
     XinaoGasSensorDescription(key="gas_price", translation_key="gas_price", native_unit_of_measurement="元/m³", icon="mdi:cash-multiple", state_class=SensorStateClass.MEASUREMENT),
     XinaoGasSensorDescription(key="ladder", translation_key="ladder", icon="mdi:stairs"),
     XinaoGasSensorDescription(key="balance", translation_key="balance", native_unit_of_measurement="元", icon="mdi:currency-cny", state_class=SensorStateClass.MEASUREMENT),
-    XinaoGasSensorDescription(key="balance_homekit", translation_key="balance", native_unit_of_measurement="°C", device_class=SensorDeviceClass.TEMPERATURE, icon="mdi:currency-cny", state_class=SensorStateClass.MEASUREMENT),
+    XinaoGasSensorDescription(key="balance_homekit", translation_key="balance", native_unit_of_measurement=UnitOfVolume.CUBIC_METERS, device_class=SensorDeviceClass.GAS, icon="mdi:currency-cny", state_class=SensorStateClass.TOTAL_INCREASING),
     XinaoGasSensorDescription(key="meter_reading", translation_key="meter_reading", native_unit_of_measurement=UnitOfVolume.CUBIC_METERS, device_class=SensorDeviceClass.GAS, icon="mdi:counter", state_class=SensorStateClass.TOTAL_INCREASING),
     XinaoGasSensorDescription(key="last_meter_reading", translation_key="last_meter_reading", native_unit_of_measurement=UnitOfVolume.CUBIC_METERS, device_class=SensorDeviceClass.GAS, icon="mdi:counter", state_class=SensorStateClass.TOTAL),
     XinaoGasSensorDescription(key="last_update_time", translation_key="last_update_time", icon="mdi:update"),

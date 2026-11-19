@@ -81,6 +81,9 @@
       "balance": {
         "name": "燃气余额"
       },
+      "balance_homekit": {
+        "name": "燃气余额(HomeKit)"
+      },
       "meter_reading": {
         "name": "燃气总抄表数"
       },

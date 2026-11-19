@@ -2,120 +2,123 @@
   "config": {
     "step": {
       "user": {
-        "title": "新奥燃气",
-        "description": "首次使用或全局 token 失效时，填写新奥燃气微信小程序 token。已有全局 token 时会直接进入户号选择。",
+        "title": "Xinao Gas",
+        "description": "Enter your Xinao Gas WeChat Mini Program token when setting up for the first time or when the global token has expired. If a global token already exists, you will go directly to account selection.",
         "data": {
-          "token": "小程序 Token",
-          "update_interval": "数据刷新间隔（分钟，建议360以上）"
+          "token": "Mini Program Token",
+          "update_interval": "Data refresh interval (minutes, recommended 360+)"
         }
       },
       "select_account": {
-        "title": "选择燃气户号",
-        "description": "当前账号下找到 {count} 个燃气户号，请选择要接入 Home Assistant 的户号。",
+        "title": "Select Gas Account",
+        "description": "Found {count} gas accounts under this account. Please select the one you want to add to Home Assistant.",
         "data": {
-          "account_choice": "燃气户号"
+          "account_choice": "Gas Account"
         }
       }
     },
     "error": {
-      "auth": "认证失败，小程序 token 可能已失效。",
-      "cannot_connect": "接口请求失败，请检查小程序 token。",
-      "unknown": "未知错误。",
-      "invalid_account": "请选择列表中的燃气户号。"
+      "auth": "Authentication failed. The Mini Program token may have expired.",
+      "cannot_connect": "API request failed. Please check your Mini Program token.",
+      "unknown": "Unknown error.",
+      "invalid_account": "Please select a gas account from the list."
     },
     "abort": {
-      "already_configured": "该燃气账户已经配置。",
-      "auth": "认证失败，小程序 token 可能已失效。",
-      "cannot_connect": "接口请求失败，请检查小程序 token。"
+      "already_configured": "This gas account is already configured.",
+      "auth": "Authentication failed. The Mini Program token may have expired.",
+      "cannot_connect": "API request failed. Please check your Mini Program token."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "新奥燃气设置",
-        "description": "更新全局小程序 token、数据刷新间隔或切换当前户号。token 不填时使用已有全局 token。",
+        "title": "Xinao Gas Settings",
+        "description": "Update the global Mini Program token, data refresh interval, or switch the current account. Leave token blank to use the existing global token.",
         "data": {
-          "token": "小程序 Token",
-          "update_interval": "数据刷新间隔（分钟，建议360以上）"
+          "token": "Mini Program Token",
+          "update_interval": "Data refresh interval (minutes, recommended 360+)"
         }
       },
       "select_account": {
-        "title": "选择燃气户号",
-        "description": "当前账号下找到 {count} 个燃气户号，请选择要接入 Home Assistant 的户号。",
+        "title": "Select Gas Account",
+        "description": "Found {count} gas accounts under this account. Please select the one you want to add to Home Assistant.",
         "data": {
-          "account_choice": "燃气户号"
+          "account_choice": "Gas Account"
         }
       }
     },
     "error": {
-      "auth": "认证失败，小程序 token 可能已失效。",
-      "cannot_connect": "接口请求失败，请检查小程序 token。",
-      "unknown": "未知错误。",
-      "invalid_account": "请选择列表中的燃气户号。"
+      "auth": "Authentication failed. The Mini Program token may have expired.",
+      "cannot_connect": "API request failed. Please check your Mini Program token.",
+      "unknown": "Unknown error.",
+      "invalid_account": "Please select a gas account from the list."
     },
     "abort": {
-      "auth": "认证失败，小程序 token 可能已失效。",
-      "cannot_connect": "接口请求失败，请检查小程序 token。"
+      "auth": "Authentication failed. The Mini Program token may have expired.",
+      "cannot_connect": "API request failed. Please check your Mini Program token."
     }
   },
   "entity": {
     "sensor": {
       "current_month_amount": {
-        "name": "最近账单金额"
+        "name": "Latest Bill Amount"
       },
       "current_month_usage": {
-        "name": "最近账单用气量"
+        "name": "Latest Bill Gas Usage"
       },
       "meter_reading_date": {
-        "name": "抄表日期"
+        "name": "Meter Reading Date"
       },
       "latest_bill_date": {
-        "name": "最近账单日期"
+        "name": "Latest Bill Date"
       },
       "gas_price": {
-        "name": "燃气单价"
+        "name": "Gas Price"
       },
       "ladder": {
-        "name": "燃气阶梯"
+        "name": "Gas Ladder"
       },
       "balance": {
-        "name": "燃气余额"
+        "name": "Gas Balance"
+      },
+      "balance_homekit": {
+        "name": "Gas Balance (HomeKit)"
       },
       "meter_reading": {
-        "name": "燃气总抄表数"
+        "name": "Total Meter Reading"
       },
       "last_meter_reading": {
-        "name": "上次抄表数"
+        "name": "Previous Meter Reading"
       },
       "last_update_time": {
-        "name": "数据更新时间"
+        "name": "Last Updated"
       },
       "bill_status": {
-        "name": "账单状态"
+        "name": "Bill Status"
       },
       "month_total_gas": {
-        "name": "当月累计气量"
+        "name": "Monthly Total Gas"
       },
       "daily_usage": {
-        "name": "日用气量"
+        "name": "Daily Gas Usage"
       },
       "valve_status": {
-        "name": "燃气表阀门"
+        "name": "Gas Valve"
       },
       "battery_status": {
-        "name": "燃气表电池状态"
+        "name": "Meter Battery"
       },
       "iot_update_time": {
-        "name": "物联表更新时间"
+        "name": "IoT Meter Update Time"
       },
       "meter_type": {
-        "name": "燃气表类型"
+        "name": "Meter Type"
       },
       "company_name": {
-        "name": "燃气公司"
+        "name": "Gas Company"
       },
       "cumulative_usage": {
-        "name": "累计用气"
+        "name": "Cumulative Usage"
       }
     }
   }

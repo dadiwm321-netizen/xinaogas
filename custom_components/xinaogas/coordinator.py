@@ -353,6 +353,8 @@ class XinaoGasCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             result = {
                 "balance": to_number(meter.get("balance")) or to_number(bill.get("balance")),
+                # 伪装成传感器给到homekit
+                "balance2homekit": to_number(meter.get("balance")) or to_number(bill.get("balance")),
                 "current_month_usage": to_number(latest_bill.get("thisGasConsumption")),
                 "current_month_amount": to_number(latest_bill.get("totalAmount") or ladder.get("total")),
                 "meter_reading": meter_reading,
